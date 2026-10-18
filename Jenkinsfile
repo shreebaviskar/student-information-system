@@ -4,21 +4,23 @@ pipeline {
     environment {
         APP_IMAGE_NAME = 'student-information-system'
         CONTAINER_NAME = 'student-info-app'
-        HOST_PORT = '8080'
+        HOST_PORT      = '8080'
         CONTAINER_PORT = '80'
-            DOCKER_EXE = 'C:\\Users\\shree\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe'
+        // Uses the current user's LocalAppData dynamically (works for any Windows user)
+        DOCKER_EXE     = "${env.LOCALAPPDATA}\\Programs\\DockerDesktop\\resources\\bin\\docker.exe"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo 'Checking out source code from GitHub'
+                echo 'Checking out source code from Git repository...'
                 checkout scm
             }
         }
 
         stage('Validate Project Files') {
             steps {
+                echo 'Validating required project assets...'
                 script {
                     def requiredFiles = [
                         'index.html',
@@ -30,7 +32,7 @@ pipeline {
 
                     for (file in requiredFiles) {
                         if (!fileExists(file)) {
-                            error("Required file is missing: ${file}")
+                            error("CRITICAL: Required file is missing: ${file}")
                         }
                         echo "Verified: ${file}"
                     }
@@ -40,96 +42,31 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-<<<<<<< HEAD
-                echo '=================================================='
-                echo 'STAGE 3: BUILD DOCKER CONTAINER IMAGE'
-                echo '=================================================='
-                echo "Building Docker image '${APP_IMAGE_NAME}:${BUILD_NUMBER}'..."
-                script {
-                    if (isUnix()) {
-                        sh "docker build -t ${APP_IMAGE_NAME}:${BUILD_NUMBER} -t ${APP_IMAGE_NAME}:latest ."
-                    } else {
-                        bat '"%DOCKER_EXE%" --version'
-bat '"%DOCKER_EXE%" build -t %APP_IMAGE_NAME%:%BUILD_NUMBER% -t %APP_IMAGE_NAME%:latest .'
-                    }
-                }
-                echo "Docker image '${APP_IMAGE_NAME}:${BUILD_NUMBER}' built successfully."
-=======
-                bat '''"%DOCKER_EXE%" --version'''
-                bat '''"%DOCKER_EXE%" build -t %APP_IMAGE_NAME%:%BUILD_NUMBER% -t %APP_IMAGE_NAME%:latest .'''
->>>>>>> 0d6a707 (Fix Jenkins pipeline syntax)
+                echo "Building Docker image: ${APP_IMAGE_NAME}:${BUILD_NUMBER}..."
+                bat '"%DOCKER_EXE%" --version'
+                bat '"%DOCKER_EXE%" build -t %APP_IMAGE_NAME%:%BUILD_NUMBER% -t %APP_IMAGE_NAME%:latest .'
             }
         }
 
         stage('Deploy Application') {
             steps {
-                script {
-<<<<<<< HEAD
-                    if (isUnix()) {
-                        sh """
-                            # Safely stop and remove previous container if running
-                            if [ \$(docker ps -a -q -f name=^/${CONTAINER_NAME}\$) ]; then
-                                echo "Stopping and removing existing container '${CONTAINER_NAME}'..."
-                                docker stop ${CONTAINER_NAME} || true
-                                docker rm ${CONTAINER_NAME} || true
-                            fi
-
-                            echo "Running new container '${CONTAINER_NAME}' from image '${APP_IMAGE_NAME}:${BUILD_NUMBER}'..."
-                            docker run -d --name ${CONTAINER_NAME} -p ${HOST_PORT}:${CONTAINER_PORT} ${APP_IMAGE_NAME}:${BUILD_NUMBER}
-                        """
-                    } else {
-                        bat '"%DOCKER_EXE%" rm -f %CONTAINER_NAME%'
-                        bat '"%DOCKER_EXE%" run -d --name %CONTAINER_NAME% -p %HOST_PORT%:%CONTAINER_PORT% %APP_IMAGE_NAME%:%BUILD_NUMBER%'
-                    }
-                           
-                    }
-=======
-                    bat '''"%DOCKER_EXE%" rm -f %CONTAINER_NAME% 2>NUL'''
-                    bat '''"%DOCKER_EXE%" run -d --name %CONTAINER_NAME% -p %HOST_PORT%:%CONTAINER_PORT% %APP_IMAGE_NAME%:%BUILD_NUMBER%'''
->>>>>>> 0d6a707 (Fix Jenkins pipeline syntax)
-                }
+                echo "Deploying container %CONTAINER_NAME% on port %HOST_PORT%..."
+                // rm -f stops and removes existing container; returnStatus: true prevents failure on build #1
+                bat(returnStatus: true, script: '"%DOCKER_EXE%" rm -f %CONTAINER_NAME%')
+                bat '"%DOCKER_EXE%" run -d --name %CONTAINER_NAME% -p %HOST_PORT%:%CONTAINER_PORT% %APP_IMAGE_NAME%:%BUILD_NUMBER%'
             }
         }
 
         stage('Verify Deployment') {
             steps {
+                echo 'Verifying container running state and HTTP availability...'
                 sleep 5
 
-                bat '''"%DOCKER_EXE%" ps --filter name=student-info-app'''
+                bat '"%DOCKER_EXE%" ps --filter name=%CONTAINER_NAME%'
 
-<<<<<<< HEAD
-                            if [ "\$HTTP_STATUS" != "200" ]; then
-                                echo "ERROR: Expected HTTP 200 but received '\$HTTP_STATUS'."
-                                echo "Dumping container logs for diagnostics:"
-                                docker logs --tail 50 ${CONTAINER_NAME}
-                                error("Deployment verification failed.")
-                            fi
-                        """
-                    } else {
-                        bat """
-                            echo Checking container running state...
-                            docker ps -f name=^/${CONTAINER_NAME}\$
-=======
-                powershell '''
-                    $ErrorActionPreference = "Stop"
->>>>>>> 0d6a707 (Fix Jenkins pipeline syntax)
-
-                    try {
-                        $response = Invoke-WebRequest `
-                            -Uri "http://localhost:8080" `
-                            -UseBasicParsing `
-                            -TimeoutSec 15
-
-                        Write-Host "HTTP Status: $($response.StatusCode)"
-
-                        if ($response.StatusCode -ne 200) {
-                            exit 1
-                        }
-                    }
-                    catch {
-                        Write-Error $_.Exception.Message
-                        exit 1
-                    }
+                // Works whether or not the Jenkins PowerShell plugin is installed
+                bat '''
+                    powershell -Command "try { $res = Invoke-WebRequest -Uri ('http://localhost:' + $env:HOST_PORT) -UseBasicParsing -TimeoutSec 15; Write-Host ('HTTP Status: ' + $res.StatusCode); if ($res.StatusCode -eq 200) { Write-Host 'Verification Passed!'; exit 0 } else { exit 1 } } catch { Write-Error $_.Exception.Message; exit 1 }"
                 '''
             }
         }
@@ -137,16 +74,21 @@ bat '"%DOCKER_EXE%" build -t %APP_IMAGE_NAME%:%BUILD_NUMBER% -t %APP_IMAGE_NAME%
 
     post {
         success {
+            echo '========================================='
             echo 'PIPELINE SUCCESS!'
-            echo 'Application: http://localhost:8080'
+            echo "Application is running at: http://localhost:${HOST_PORT}"
+            echo '========================================='
         }
 
         failure {
-            echo 'PIPELINE FAILED. Check Console Output for the error.'
+            echo '========================================='
+            echo 'PIPELINE FAILED. Inspect the console output above.'
+            echo 'Ensure Docker Desktop is running.'
+            echo '========================================='
         }
 
         always {
-            echo "Build #${BUILD_NUMBER} completed."
+            echo "Build #${BUILD_NUMBER} execution completed."
         }
     }
 }
