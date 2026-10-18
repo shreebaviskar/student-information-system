@@ -4,31 +4,21 @@ pipeline {
     environment {
         APP_IMAGE_NAME = 'student-information-system'
         CONTAINER_NAME = 'student-info-app'
-        HOST_PORT      = '8080'
+        HOST_PORT = '8080'
         CONTAINER_PORT = '80'
-                DOCKER_EXE = 'C:\\Users\\shree\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe'
+            DOCKER_EXE = 'C:\\Users\\shree\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe'
     }
 
     stages {
-        // STAGE 1: CHECKOUT
-        // Checks out source code from configured SCM repository (Git/GitHub)
         stage('Checkout') {
             steps {
-                echo '=================================================='
-                echo 'STAGE 1: CHECKOUT SOURCE CODE'
-                echo '=================================================='
-                echo 'Fetching latest commits from configured Git repository...'
+                echo 'Checking out source code from GitHub'
                 checkout scm
             }
         }
 
-        // STAGE 2: VALIDATE PROJECT FILES
-        // Confirms all required static, server, and container files exist
         stage('Validate Project Files') {
             steps {
-                echo '=================================================='
-                echo 'STAGE 2: VALIDATE REQUIRED PROJECT FILES'
-                echo '=================================================='
                 script {
                     def requiredFiles = [
                         'index.html',
@@ -40,20 +30,17 @@ pipeline {
 
                     for (file in requiredFiles) {
                         if (!fileExists(file)) {
-                            error("CRITICAL ERROR: Required file '${file}' is missing from the workspace. Aborting pipeline.")
-                        } else {
-                            echo " [OK] Verified existence of: ${file}"
+                            error("Required file is missing: ${file}")
                         }
+                        echo "Verified: ${file}"
                     }
-                    echo 'All required project files are verified successfully.'
                 }
             }
         }
 
-        // STAGE 3: BUILD DOCKER IMAGE
-        // Packages the application into an Nginx container image with build tagging
         stage('Build Docker Image') {
             steps {
+<<<<<<< HEAD
                 echo '=================================================='
                 echo 'STAGE 3: BUILD DOCKER CONTAINER IMAGE'
                 echo '=================================================='
@@ -67,18 +54,17 @@ bat '"%DOCKER_EXE%" build -t %APP_IMAGE_NAME%:%BUILD_NUMBER% -t %APP_IMAGE_NAME%
                     }
                 }
                 echo "Docker image '${APP_IMAGE_NAME}:${BUILD_NUMBER}' built successfully."
+=======
+                bat '''"%DOCKER_EXE%" --version'''
+                bat '''"%DOCKER_EXE%" build -t %APP_IMAGE_NAME%:%BUILD_NUMBER% -t %APP_IMAGE_NAME%:latest .'''
+>>>>>>> 0d6a707 (Fix Jenkins pipeline syntax)
             }
         }
 
-        // STAGE 4: DEPLOY APPLICATION
-        // Stops any previous container and runs the newly built application container
         stage('Deploy Application') {
             steps {
-                echo '=================================================='
-                echo 'STAGE 4: DEPLOY APPLICATION CONTAINER'
-                echo '=================================================='
-                echo "Deploying container '${CONTAINER_NAME}' on host port ${HOST_PORT}..."
                 script {
+<<<<<<< HEAD
                     if (isUnix()) {
                         sh """
                             # Safely stop and remove previous container if running
@@ -97,29 +83,21 @@ bat '"%DOCKER_EXE%" build -t %APP_IMAGE_NAME%:%BUILD_NUMBER% -t %APP_IMAGE_NAME%
                     }
                            
                     }
+=======
+                    bat '''"%DOCKER_EXE%" rm -f %CONTAINER_NAME% 2>NUL'''
+                    bat '''"%DOCKER_EXE%" run -d --name %CONTAINER_NAME% -p %HOST_PORT%:%CONTAINER_PORT% %APP_IMAGE_NAME%:%BUILD_NUMBER%'''
+>>>>>>> 0d6a707 (Fix Jenkins pipeline syntax)
                 }
             }
         }
 
-        // STAGE 5: VERIFY DEPLOYMENT
-        // Confirms the container is active and returns HTTP 200 OK
         stage('Verify Deployment') {
             steps {
-                echo '=================================================='
-                echo 'STAGE 5: VERIFY DEPLOYMENT'
-                echo '=================================================='
-                echo 'Waiting for Nginx server to initialize...'
-                script {
-                    sleep 3
-                    if (isUnix()) {
-                        sh """
-                            echo "Checking container running state..."
-                            docker ps -f name=^/${CONTAINER_NAME}\$
+                sleep 5
 
-                            echo "Checking HTTP response at http://localhost:${HOST_PORT}..."
-                            HTTP_STATUS=\$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${HOST_PORT} || echo "FAILED")
-                            echo "Received HTTP status: \$HTTP_STATUS"
+                bat '''"%DOCKER_EXE%" ps --filter name=student-info-app'''
 
+<<<<<<< HEAD
                             if [ "\$HTTP_STATUS" != "200" ]; then
                                 echo "ERROR: Expected HTTP 200 but received '\$HTTP_STATUS'."
                                 echo "Dumping container logs for diagnostics:"
@@ -131,39 +109,44 @@ bat '"%DOCKER_EXE%" build -t %APP_IMAGE_NAME%:%BUILD_NUMBER% -t %APP_IMAGE_NAME%
                         bat """
                             echo Checking container running state...
                             docker ps -f name=^/${CONTAINER_NAME}\$
+=======
+                powershell '''
+                    $ErrorActionPreference = "Stop"
+>>>>>>> 0d6a707 (Fix Jenkins pipeline syntax)
 
-                            echo Checking HTTP response at http://localhost:${HOST_PORT}...
-                            powershell -Command "try { \$resp = Invoke-WebRequest -Uri 'http://localhost:${HOST_PORT}' -UseBasicParsing -TimeoutSec 10; Write-Host ('HTTP Status: ' + \$resp.StatusCode); if (\$resp.StatusCode -eq 200) { Write-Host 'Verification Passed: Application responded with HTTP 200 OK!'; exit 0 } else { Write-Error ('Unexpected status code: ' + \$resp.StatusCode); exit 1 } } catch { Write-Error \$_.Exception.Message; exit 1 }"
-                        """
+                    try {
+                        $response = Invoke-WebRequest `
+                            -Uri "http://localhost:8080" `
+                            -UseBasicParsing `
+                            -TimeoutSec 15
+
+                        Write-Host "HTTP Status: $($response.StatusCode)"
+
+                        if ($response.StatusCode -ne 200) {
+                            exit 1
+                        }
                     }
-                }
-                echo 'Deployment successfully verified!'
+                    catch {
+                        Write-Error $_.Exception.Message
+                        exit 1
+                    }
+                '''
             }
         }
     }
 
-    // POST-EXECUTION ACTIONS & NOTIFICATIONS
     post {
         success {
-            echo '=================================================='
-            echo 'PIPELINE STATUS: SUCCESS'
-            echo "Application successfully deployed and running at:"
-            echo "  http://localhost:${HOST_PORT}"
-            echo "Image Tag: ${APP_IMAGE_NAME}:${BUILD_NUMBER}"
-            echo '=================================================='
+            echo 'PIPELINE SUCCESS!'
+            echo 'Application: http://localhost:8080'
         }
+
         failure {
-            echo '=================================================='
-            echo 'PIPELINE STATUS: FAILED'
-            echo 'An error occurred during pipeline execution.'
-            echo 'Troubleshooting steps:'
-            echo ' 1. Verify Docker Desktop is running on host machine.'
-            echo ' 2. Ensure Jenkins user/service has permission to access Docker daemon.'
-            echo ' 3. Check port 8080 is not already occupied by another service.'
-            echo '=================================================='
+            echo 'PIPELINE FAILED. Check Console Output for the error.'
         }
+
         always {
-            echo "Pipeline run completed for build #${BUILD_NUMBER}."
+            echo "Build #${BUILD_NUMBER} completed."
         }
     }
 }
