@@ -92,7 +92,7 @@ pipeline {
                     } else {
                         bat """
                             @echo off
-                            FOR /F "tokens=*" %%i IN ('docker ps -a -q -f name^=^/${CONTAINER_NAME}^$') DO (
+                            FOR /F "tokens=*" %%i IN ('docker ps -a -q -f name^=^/${CONTAINER_NAME}^\$') DO (
                                 echo Stopping and removing existing container '${CONTAINER_NAME}'...
                                 docker stop ${CONTAINER_NAME}
                                 docker rm ${CONTAINER_NAME}
@@ -134,7 +134,7 @@ pipeline {
                     } else {
                         bat """
                             echo Checking container running state...
-                            docker ps -f name=^/${CONTAINER_NAME}$
+                            docker ps -f name=^/${CONTAINER_NAME}\$
 
                             echo Checking HTTP response at http://localhost:${HOST_PORT}...
                             powershell -Command "try { \$resp = Invoke-WebRequest -Uri 'http://localhost:${HOST_PORT}' -UseBasicParsing -TimeoutSec 10; Write-Host ('HTTP Status: ' + \$resp.StatusCode); if (\$resp.StatusCode -eq 200) { Write-Host 'Verification Passed: Application responded with HTTP 200 OK!'; exit 0 } else { Write-Error ('Unexpected status code: ' + \$resp.StatusCode); exit 1 } } catch { Write-Error \$_.Exception.Message; exit 1 }"
