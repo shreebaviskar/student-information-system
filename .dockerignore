@@ -1,0 +1,17 @@
+# Version control
+.git
+.gitignore
+
+# Jenkins Pipeline
+Jenkinsfile
+
+# Project documentation & notes
+README.md
+*.md
+
+# Editor & OS files
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+*.log

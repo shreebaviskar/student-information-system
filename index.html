@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="description" content="Student Information System with Automated Deployment Using Jenkins and Docker - ASDD Mini Project">
+  <title>Student Information System | ASDD DevOps Portal</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Main Application Wrapper -->
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h2>EduPortal</h2>
+          <span>ASDD DevOps Mini Project</span>
+        </div>
+        <button class="mobile-close-btn" id="sidebarCloseBtn" aria-label="Close Sidebar">&times;</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Core Management</div>
+        <a href="#dashboard" class="nav-item active" id="navDashboard">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="9"/>
+            <rect x="14" y="3" width="7" height="5"/>
+            <rect x="14" y="12" width="7" height="9"/>
+            <rect x="3" y="16" width="7" height="5"/>
+          </svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="#students-section" class="nav-item" id="navStudents">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <span>Student Records</span>
+        </a>
+        
+        <div class="nav-section-label">DevOps &amp; Architecture</div>
+        <button type="button" class="nav-item nav-btn" id="navArchitecture">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+            <line x1="6" y1="6" x2="6.01" y2="6"/>
+            <line x1="6" y1="18" x2="6.01" y2="18"/>
+          </svg>
+          <span>DevOps Workflow</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Footer Badge -->
+      <div class="sidebar-footer">
+        <div class="tech-stack-card">
+          <div class="tech-stack-title">
+            <span class="status-indicator"></span>
+            CI/CD Pipeline Ready
+          </div>
+          <p class="tech-stack-details">
+            Nginx on Docker &bull; Jenkins Automation &bull; Git SCM
+          </p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Top Header Bar -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div class="header-titles">
+            <h1>Student Information System</h1>
+            <p class="subtitle">Agile Software Development and DevOps (ASDD) Mini Project</p>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="btn btn-secondary" id="resetDataBtn" title="Reset to initial 6 sample student records">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+            <span>Reset Samples</span>
+          </button>
+          
+          <button class="btn btn-primary" id="openAddModalBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>Add Student</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Dashboard View Content -->
+      <div class="content-body" id="dashboard">
+        
+        <!-- Summary Cards Grid -->
+        <section class="metrics-grid">
+          
+          <!-- Card 1: Total Students -->
+          <div class="metric-card">
+            <div class="metric-icon-box bg-blue">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <div class="metric-data">
+              <span class="metric-label">Total Students</span>
+              <h2 class="metric-value" id="statTotalStudents">0</h2>
+              <span class="metric-subtext">Active enrolled student records</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Total Departments Represented -->
+          <div class="metric-card">
+            <div class="metric-icon-box bg-indigo">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <div class="metric-data">
+              <span class="metric-label">Departments Represented</span>
+              <h2 class="metric-value" id="statTotalDepartments">0</h2>
+              <span class="metric-subtext">Out of 6 college departments</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Final Year Students -->
+          <div class="metric-card">
+            <div class="metric-icon-box bg-emerald">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+              </svg>
+            </div>
+            <div class="metric-data">
+              <span class="metric-label">Final Year Candidates</span>
+              <h2 class="metric-value" id="statFinalYearStudents">0</h2>
+              <span class="metric-subtext">Graduating batch</span>
+            </div>
+          </div>
+
+          <!-- Card 4: Top Department -->
+          <div class="metric-card">
+            <div class="metric-icon-box bg-amber">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="7"/>
+                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+              </svg>
+            </div>
+            <div class="metric-data">
+              <span class="metric-label">Leading Department</span>
+              <h2 class="metric-value metric-value-text" id="statTopDepartment">-</h2>
+              <span class="metric-subtext" id="statTopDeptCount">Highest student enrollment</span>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- Records & Table Management Section -->
+        <section class="table-section" id="students-section">
+          <div class="table-card">
+            
+            <!-- Controls Toolbar -->
+            <div class="table-toolbar">
+              <div class="toolbar-left">
+                <div class="search-box">
+                  <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <input type="text" id="searchInput" placeholder="Search by name, roll no, or department..." aria-label="Search students">
+                  <button type="button" class="search-clear-btn" id="searchClearBtn" aria-label="Clear search">&times;</button>
+                </div>
+
+                <div class="filter-group">
+                  <select id="departmentFilter" aria-label="Filter by department">
+                    <option value="">All Departments</option>
+                    <option value="Computer Engineering">Computer Engineering</option>
+                    <option value="Artificial Intelligence and Machine Learning">Artificial Intelligence and Machine Learning</option>
+                    <option value="Information Technology">Information Technology</option>
+                    <option value="Electronics and Telecommunication">Electronics and Telecommunication</option>
+                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                    <option value="Civil Engineering">Civil Engineering</option>
+                  </select>
+
+                  <select id="yearFilter" aria-label="Filter by year">
+                    <option value="">All Years</option>
+                    <option value="First Year">First Year</option>
+                    <option value="Second Year">Second Year</option>
+                    <option value="Third Year">Third Year</option>
+                    <option value="Final Year">Final Year</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="toolbar-right">
+                <span class="record-counter" id="recordCounter">Showing 0 records</span>
+              </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="table-responsive">
+              <table class="students-table" id="studentsTable">
+                <thead>
+                  <tr>
+                    <th>Student ID</th>
+                    <th>Full Name</th>
+                    <th>Roll Number</th>
+                    <th>Department</th>
+                    <th>Year of Study</th>
+                    <th>Email Address</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="studentsTableBody">
+                  <!-- Injected dynamically via script.js -->
+                </tbody>
+              </table>
+
+              <!-- Empty State Notification -->
+              <div class="empty-state" id="emptyState" style="display: none;">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <line x1="23" y1="11" x2="17" y2="11"/>
+                </svg>
+                <h3>No Matching Student Records Found</h3>
+                <p id="emptyStateDesc">Try adjusting your search criteria or add a new student record.</p>
+                <button type="button" class="btn btn-secondary" id="emptyStateActionBtn">Clear Search Filters</button>
+              </div>
+            </div>
+
+            <!-- Table Footer -->
+            <div class="table-footer">
+              <div class="storage-notice">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="16" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+                <span>Data stored locally in browser storage (localStorage). Survives page reloads.</span>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal 1: Add / Edit Student Modal -->
+  <div class="modal-backdrop" id="studentModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <div class="modal-header-info">
+            <h3 class="modal-title" id="modalTitle">Add Student Record</h3>
+            <p class="modal-subtitle" id="modalSubtitle">Fill in the student details below. All fields are required.</p>
+          </div>
+          <button type="button" class="modal-close-btn" id="modalCloseBtn" aria-label="Close dialog">&times;</button>
+        </div>
+
+        <form id="studentForm" novalidate>
+          <div class="modal-body">
+            
+            <!-- Hidden field for editing state tracking -->
+            <input type="hidden" id="originalStudentId" value="">
+
+            <div class="form-grid">
+              
+              <!-- Student ID -->
+              <div class="form-group">
+                <label for="studentIdInput">Student ID <span class="required">*</span></label>
+                <input type="text" id="studentIdInput" placeholder="e.g. STU-1007" autocomplete="off" required>
+                <span class="field-error" id="studentIdError"></span>
+                <span class="field-help">Unique identifier (e.g. STU-1001)</span>
+              </div>
+
+              <!-- Roll Number -->
+              <div class="form-group">
+                <label for="rollNumberInput">Roll Number <span class="required">*</span></label>
+                <input type="text" id="rollNumberInput" placeholder="e.g. CS-2023-042" autocomplete="off" required>
+                <span class="field-error" id="rollNumberError"></span>
+                <span class="field-help">Unique college roll number</span>
+              </div>
+
+              <!-- Full Name -->
+              <div class="form-group form-group-full">
+                <label for="fullNameInput">Full Name <span class="required">*</span></label>
+                <input type="text" id="fullNameInput" placeholder="e.g. Aarav Sharma" autocomplete="off" required>
+                <span class="field-error" id="fullNameError"></span>
+              </div>
+
+              <!-- Department Dropdown -->
+              <div class="form-group">
+                <label for="departmentSelect">Department <span class="required">*</span></label>
+                <select id="departmentSelect" required>
+                  <option value="" disabled selected>Select Department</option>
+                  <option value="Computer Engineering">Computer Engineering</option>
+                  <option value="Artificial Intelligence and Machine Learning">Artificial Intelligence and Machine Learning</option>
+                  <option value="Information Technology">Information Technology</option>
+                  <option value="Electronics and Telecommunication">Electronics and Telecommunication</option>
+                  <option value="Mechanical Engineering">Mechanical Engineering</option>
+                  <option value="Civil Engineering">Civil Engineering</option>
+                </select>
+                <span class="field-error" id="departmentError"></span>
+              </div>
+
+              <!-- Year of Study Dropdown -->
+              <div class="form-group">
+                <label for="yearSelect">Year of Study <span class="required">*</span></label>
+                <select id="yearSelect" required>
+                  <option value="" disabled selected>Select Year</option>
+                  <option value="First Year">First Year</option>
+                  <option value="Second Year">Second Year</option>
+                  <option value="Third Year">Third Year</option>
+                  <option value="Final Year">Final Year</option>
+                </select>
+                <span class="field-error" id="yearError"></span>
+              </div>
+
+              <!-- Email Address -->
+              <div class="form-group form-group-full">
+                <label for="emailInput">Email Address <span class="required">*</span></label>
+                <input type="email" id="emailInput" placeholder="e.g. student.name@example.edu" autocomplete="off" required>
+                <span class="field-error" id="emailError"></span>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="modalCancelBtn">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="modalSubmitBtn">Save Student</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: View Student Details Modal -->
+  <div class="modal-backdrop" id="viewModal" role="dialog" aria-modal="true" aria-labelledby="viewModalTitle">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <div class="modal-header-info">
+            <h3 class="modal-title" id="viewModalTitle">Student Profile</h3>
+            <p class="modal-subtitle">Official Student Academic Record</p>
+          </div>
+          <button type="button" class="modal-close-btn" id="viewModalCloseBtn" aria-label="Close dialog">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="profile-card">
+            <div class="profile-avatar" id="viewAvatar">ST</div>
+            <div class="profile-header-meta">
+              <h3 id="viewFullName">Student Name</h3>
+              <div class="profile-badges">
+                <span class="badge" id="viewDeptBadge">Department</span>
+                <span class="badge" id="viewYearBadge">Year</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-details-grid">
+            <div class="detail-item">
+              <span class="detail-label">Student ID</span>
+              <span class="detail-value" id="viewStudentId">-</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Roll Number</span>
+              <span class="detail-value" id="viewRollNumber">-</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Department</span>
+              <span class="detail-value" id="viewDepartment">-</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Year of Study</span>
+              <span class="detail-value" id="viewYear">-</span>
+            </div>
+            <div class="detail-item full-width">
+              <span class="detail-label">Email Address</span>
+              <span class="detail-value" id="viewEmail">-</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="viewModalDoneBtn">Close</button>
+          <button type="button" class="btn btn-primary" id="viewModalEditBtn">Edit Record</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Delete Confirmation Modal -->
+  <div class="modal-backdrop" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div class="modal-dialog modal-dialog-sm">
+      <div class="modal-content">
+        
+        <div class="modal-header delete-header">
+          <div class="delete-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <div class="modal-header-info">
+            <h3 class="modal-title" id="deleteModalTitle">Confirm Record Deletion</h3>
+            <p class="modal-subtitle">This action cannot be undone.</p>
+          </div>
+          <button type="button" class="modal-close-btn" id="deleteModalCloseBtn" aria-label="Close dialog">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <p class="delete-warning-text">
+            Are you sure you want to permanently delete student record for 
+            <strong id="deleteStudentName">Student</strong> 
+            (Roll No: <span id="deleteStudentRoll">-</span>)?
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="deleteModalCancelBtn">Cancel</button>
+          <button type="button" class="btn btn-danger" id="deleteModalConfirmBtn">Yes, Delete Record</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: DevOps & Architecture Info Modal -->
+  <div class="modal-backdrop" id="architectureModal" role="dialog" aria-modal="true" aria-labelledby="archModalTitle">
+    <div class="modal-dialog modal-dialog-lg">
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <div class="modal-header-info">
+            <h3 class="modal-title" id="archModalTitle">ASDD Mini Project Architecture</h3>
+            <p class="modal-subtitle">Continuous Integration and Deployment (CI/CD) Workflow</p>
+          </div>
+          <button type="button" class="modal-close-btn" id="archModalCloseBtn" aria-label="Close dialog">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="architecture-flow">
+            <div class="flow-step">
+              <div class="step-badge">1. SCM</div>
+              <h4>Git &amp; GitHub</h4>
+              <p>Source code versioning, feature branching, and commit management.</p>
+            </div>
+            <div class="flow-arrow">&rarr;</div>
+            <div class="flow-step">
+              <div class="step-badge">2. CI</div>
+              <h4>Jenkins Pipeline</h4>
+              <p>Automated verification, linting, and Docker image build with build numbering.</p>
+            </div>
+            <div class="flow-arrow">&rarr;</div>
+            <div class="flow-step">
+              <div class="step-badge">3. Package</div>
+              <h4>Docker Container</h4>
+              <p>Packaged with official Nginx Alpine for lightweight high-performance static hosting.</p>
+            </div>
+            <div class="flow-arrow">&rarr;</div>
+            <div class="flow-step">
+              <div class="step-badge">4. CD</div>
+              <h4>Automated Deploy</h4>
+              <p>Seamless container replacement on host port 8080 with health verification.</p>
+            </div>
+          </div>
+
+          <div class="arch-meta-box">
+            <h4>Practical Mapping (Academic Syllabus):</h4>
+            <ul>
+              <li><strong>Experiment 2:</strong> Version control operations with Git and GitHub.</li>
+              <li><strong>Experiment 3:</strong> Continuous Integration pipeline setup using Jenkins.</li>
+              <li><strong>Experiment 5:</strong> Application containerization using Docker and Nginx.</li>
+              <li><strong>Experiment 8:</strong> Automated deployment verification and delivery.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="archModalCloseFooterBtn">Close Overview</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Application Script -->
+  <script src="script.js"></script>
+</body>
+</html>
