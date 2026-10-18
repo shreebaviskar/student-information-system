@@ -7,7 +7,7 @@ pipeline {
         HOST_PORT      = '8080'
         CONTAINER_PORT = '80'
         // Uses the current user's LocalAppData dynamically (works for any Windows user)
-        DOCKER_EXE     = "${env.LOCALAPPDATA}\\Programs\\DockerDesktop\\resources\\bin\\docker.exe"
+        DOCKER_EXE = 'C:\\Users\\shree\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe'
     }
 
     stages {
