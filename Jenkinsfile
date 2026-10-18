@@ -6,6 +6,7 @@ pipeline {
         CONTAINER_NAME = 'student-info-app'
         HOST_PORT      = '8080'
         CONTAINER_PORT = '80'
+                DOCKER_EXE = 'C:\\Users\\shree\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe'
     }
 
     stages {
@@ -61,7 +62,8 @@ pipeline {
                     if (isUnix()) {
                         sh "docker build -t ${APP_IMAGE_NAME}:${BUILD_NUMBER} -t ${APP_IMAGE_NAME}:latest ."
                     } else {
-                        bat "docker build -t ${APP_IMAGE_NAME}:${BUILD_NUMBER} -t ${APP_IMAGE_NAME}:latest ."
+                        bat '"%DOCKER_EXE%" --version'
+bat '"%DOCKER_EXE%" build -t %APP_IMAGE_NAME%:%BUILD_NUMBER% -t %APP_IMAGE_NAME%:latest .'
                     }
                 }
                 echo "Docker image '${APP_IMAGE_NAME}:${BUILD_NUMBER}' built successfully."
@@ -90,13 +92,9 @@ pipeline {
                             docker run -d --name ${CONTAINER_NAME} -p ${HOST_PORT}:${CONTAINER_PORT} ${APP_IMAGE_NAME}:${BUILD_NUMBER}
                         """
                     } else {
-                        bat """
-                            @echo off
-                            FOR /F "tokens=*" %%i IN ('docker ps -a -q -f name^=^/${CONTAINER_NAME}^\$') DO (
-                                echo Stopping and removing existing container '${CONTAINER_NAME}'...
-                                docker stop ${CONTAINER_NAME}
-                                docker rm ${CONTAINER_NAME}
-                            )
+                        bat '"%DOCKER_EXE%" rm -f %CONTAINER_NAME%'
+                        bat '"%DOCKER_EXE%" run -d --name %CONTAINER_NAME% -p %HOST_PORT%:%CONTAINER_PORT% %APP_IMAGE_NAME%:%BUILD_NUMBER%'
+                    }
                             echo Running new container '${CONTAINER_NAME}' from image '${APP_IMAGE_NAME}:${BUILD_NUMBER}'...
                             docker run -d --name ${CONTAINER_NAME} -p ${HOST_PORT}:${CONTAINER_PORT} ${APP_IMAGE_NAME}:${BUILD_NUMBER}
                         """
