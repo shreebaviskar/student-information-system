@@ -95,9 +95,7 @@ bat '"%DOCKER_EXE%" build -t %APP_IMAGE_NAME%:%BUILD_NUMBER% -t %APP_IMAGE_NAME%
                         bat '"%DOCKER_EXE%" rm -f %CONTAINER_NAME%'
                         bat '"%DOCKER_EXE%" run -d --name %CONTAINER_NAME% -p %HOST_PORT%:%CONTAINER_PORT% %APP_IMAGE_NAME%:%BUILD_NUMBER%'
                     }
-                            echo Running new container '${CONTAINER_NAME}' from image '${APP_IMAGE_NAME}:${BUILD_NUMBER}'...
-                            docker run -d --name ${CONTAINER_NAME} -p ${HOST_PORT}:${CONTAINER_PORT} ${APP_IMAGE_NAME}:${BUILD_NUMBER}
-                        """
+                           
                     }
                 }
             }
