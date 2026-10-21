@@ -6,6 +6,7 @@ pipeline {
         CONTAINER_NAME = 'student-info-app'
         HOST_PORT      = '8080'
         CONTAINER_PORT = '80'
+        DOCKER_HOST = 'npipe:////./pipe/dockerDesktopLinuxEngine'
         // Uses the current user's LocalAppData dynamically (works for any Windows user)
         DOCKER_EXE = 'C:\\Users\\shree\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe'
     }
