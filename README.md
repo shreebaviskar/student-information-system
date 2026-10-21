@@ -521,3 +521,5 @@ This project delivers a functional, academic-ready solution that satisfies all c
 
 ### Q15: What is the purpose of Git in DevOps?
 **Answer:** Git serves as the single source of truth for all project assets—source code, configuration files, Dockerfiles, and CI/CD pipelines. It tracks who made changes, why they were made, and enables automated CI triggers on code push.
+
+Automatic deployment test
